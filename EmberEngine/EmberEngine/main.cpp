@@ -12,11 +12,14 @@ const GLchar* vertexSource = R"glsl(
     in vec2 texcoord;
     out vec3 Color;
     out vec2 Texcoord;
+	uniform float time;
     void main()
     {
         Color = color;
         Texcoord = texcoord;
-        gl_Position = vec4(position, 0.0, 1.0);
+		float newx = position.x + sin(time * position.x + time / position.y);
+		float newy = position.y + cos(time * position.y + time / position.x);
+        gl_Position = vec4(newx, newy, 0.0, 1.0);
     }
 )glsl";
 const GLchar* fragmentSource = R"glsl(
@@ -26,11 +29,12 @@ const GLchar* fragmentSource = R"glsl(
     out vec4 outColor;
     uniform sampler2D tex;
 	uniform sampler2D tex2;
+	uniform float time;
     void main()
     {
 		vec4 col1 = texture(tex, Texcoord) * vec4(Color, 1.0);
 		vec4 col2 = texture(tex2, Texcoord) * vec4(Color, 1.0);
-        outColor = mix(col1, col2, 0.5);
+        outColor = mix(col1, col2, sin(time * 10.f));
     }
 )glsl";
 
@@ -126,36 +130,7 @@ int main()
 	glEnableVertexAttribArray(texAttrib);
 	glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 
 		7 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat)));
-
-	/*GLuint textures[2];
-	glGenTextures(2, textures);
-	unsigned char* image;
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textures[0]);
-	int width, height;
-	image = SOIL_load_image("img.png", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	SOIL_free_image_data(image);
-	glUniform1i(glGetUniformLocation(program, "tex"), 0);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, textures[1]);
-	image = SOIL_load_image("img.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	SOIL_free_image_data(image);
-	glUniform1i(glGetUniformLocation(program, "tex2"), 1);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
-
+	
 	GLuint textures[2];
 	glGenTextures(2, textures);
 
@@ -174,12 +149,12 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+	
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, textures[1]);
-	unsigned char* image2 = SOIL_load_image("img.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-		GL_UNSIGNED_BYTE, image2);
+	image = SOIL_load_image("img2.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+		GL_UNSIGNED_BYTE, image);
 	SOIL_free_image_data(image);
 	glUniform1i(glGetUniformLocation(program, "tex2"), 1);
 
@@ -188,11 +163,16 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	auto t_start = std::chrono::high_resolution_clock::now();
+
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+		auto t_now = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+		glUniform1f(glGetUniformLocation(program, "time"), time);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glfwSwapBuffers(window);
 	}
