@@ -4,6 +4,7 @@
 #include <iostream>
 #include <chrono>
 #include <SOIL.h>
+#include <glm.hpp>
 
 const GLchar* vertexSource = R"glsl(
     #version 150 core
