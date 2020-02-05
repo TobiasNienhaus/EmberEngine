@@ -246,10 +246,10 @@ int main()
 		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform1f(glGetUniformLocation(program, "time"), time);
 
-		glm::mat4 proj = glm::perspective(glm::radians(20.0f),
+		glm::mat4 proj = glm::perspective(glm::radians(sin(time) * 40.0f + 60.0f),
 			800.0f / 600.0f, 0.01f, 10.0f);
-		proj = glm::rotate(proj, time * glm::radians(360.0f) * 0.333f,
-			glm::vec3(0.0f, 1.0f, 0.0f));
+		//proj = glm::rotate(proj, glm::radians(360.0f) * 0.333f,
+		//	glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 
 		//glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
