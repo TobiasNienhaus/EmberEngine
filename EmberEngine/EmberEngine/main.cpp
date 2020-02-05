@@ -61,12 +61,12 @@ GLfloat cube[] = {
 	 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
 	 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 	-0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-	//2
-	-0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-	-0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
 	//3
 	 0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
 	 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+	//2
+	-0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
 	//4
 	//5
 	//6
@@ -79,16 +79,18 @@ GLfloat cube[] = {
 	-1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
 };
 
+const int offset = 18;
+
 GLuint cubeEBO[]
 {
 	0, 1, 2,
-	1, 2, 3,
-	1, 3, 4,
-	3, 4, 5,
-	4, 5, 6,
+	0, 2, 3,
+	0, 3, 6,
+	0, 6, 7,
+	4, 5, 7,
 	5, 6, 7,
-	6, 7, 0,
-	7, 0, 2,
+	6, 7, 1,
+	7, 1, 2,
 	0, 1, 6,
 	1, 6, 4,
 	2, 3, 5, 
@@ -246,7 +248,7 @@ int main()
 		glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 
 		//glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
-		glDrawElements(GL_TRIANGLES, 12*3, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(offset * sizeof(GLuint)));
 
 		glEnable(GL_STENCIL_TEST);
 			glStencilFunc(GL_ALWAYS, 1, 0xFF);
