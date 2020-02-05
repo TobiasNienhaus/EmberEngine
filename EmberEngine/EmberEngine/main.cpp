@@ -22,7 +22,7 @@ const GLchar* vertexSource = R"glsl(
 	uniform mat4 proj;
     void main()
     {
-        Color = color * overrideColor;
+        Color = vec3(1.0f) * overrideColor;
         Texcoord = texcoord;
         gl_Position = proj * view * model * vec4(position, 1.0);
     }
@@ -42,8 +42,13 @@ const GLchar* fragmentSource = R"glsl(
 		vec4 col1 = texture(tex, vec2(texX, texY));
 		vec4 col2 = texture(tex2, vec2(texX, texY));
         outColor = mix(col1, col2, 1) * vec4(Color, 1.0f);
+		//outColor = vec4(texX, texY, 0.0f, 1.0f);
     }
 )glsl";
+
+#define ROTATE
+//const char* img = "kitten.png";
+const char* img = "cube.png";
 
 float verts[] = {
 	//  Position            Color             Texcoords
@@ -55,46 +60,73 @@ float verts[] = {
 		-0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f  // Bottom-left
 };
 
-GLfloat cube[] = {
-	//left
-	-0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-	 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-	 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-	//3
-	 0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-	//2
-	-0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-	-0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-	//4
-	//5
-	//6
-	//floor
-	-1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-	 1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-	 1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-	 1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-	-1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-	-1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
-};
+int side = 0;
+int tri = 6;
+//#define INCREMENT
+//#define SINGLETRI
 
-const int offset = 18;
+GLfloat cube[] = {
+	//A 0 
+	-0.5f, -0.5f,  0.5f, 0.0f, 0.5f,
+	//B 1 
+	 0.5f, -0.5f,  0.5f, 0.2f, 0.5f,
+	//C 2 
+	-0.5f,  0.5f,  0.5f, 0.0f, 0.0f,
+	//D 3 
+	 0.5f,  0.5f,  0.5f, 0.2f, 0.0f,
+	//E 4 
+	-0.5f, -0.5f, -0.5f, 0.6f, 0.5f,
+	//F 5 
+	 0.5f, -0.5f, -0.5f, 0.4f, 0.5f,
+	//G 6 
+	-0.5f,  0.5f, -0.5f, 0.6f, 0.0f,
+	//H 7 
+	 0.5f,  0.5f, -0.5f, 0.4f, 0.0f,
+
+	//A' 8 
+	-0.5f, -0.5f,  0.5f, 0.6f, 1.0f,
+	//B' 9 
+	 0.5f, -0.5f,  0.5f, 0.4f, 1.0f,
+	//C' 10
+	-0.5f,  0.5f,  0.5f, 0.8f, 1.0f,
+	//D' 11
+	 0.5f,  0.5f,  0.5f, 1.0f, 1.0f,
+	//G' 12
+	-0.5f,  0.5f, -0.5f, 0.8f, 0.5f,
+	//H' 13
+	 0.5f,  0.5f, -0.5f, 1.0f, 0.5f,
+	
+	//floor
+	-1.0f, -1.0f, -0.5f, 0.0f, 0.0f,
+	 1.0f, -1.0f, -0.5f, 1.0f, 0.0f,
+	 1.0f,  1.0f, -0.5f, 1.0f, 1.0f,
+	 1.0f,  1.0f, -0.5f, 1.0f, 1.0f,
+	-1.0f,  1.0f, -0.5f, 0.0f, 1.0f,
+	-1.0f, -1.0f, -0.5f, 0.0f, 0.0f
+};
 
 GLuint cubeEBO[]
 {
-	0, 1, 2,
-	0, 2, 3,
-	0, 3, 6,
-	0, 6, 7,
-	4, 5, 7,
+	//0
+	0, 1, 3,
+	0, 3, 2,
+	//1
+	1, 5, 7,
+	//problem
+	1, 7, 3,
+	//2
+	5, 4, 6,
 	5, 6, 7,
-	6, 7, 1,
-	7, 1, 2,
-	0, 1, 6,
-	1, 6, 4,
-	2, 3, 5, 
-	2, 5, 7
+	//3
+	//problem
+	4, 5, 9,
+	9, 4, 8,
+	//4
+	4, 8, 10,
+	4, 10, 12,
+	//5
+	12, 10, 11,
+	12, 11, 13
 };
 
 int main()
@@ -166,17 +198,17 @@ int main()
 	// Specify the layout of the vertex data
 	GLint posAttrib = glGetAttribLocation(program, "position");
 	glEnableVertexAttribArray(posAttrib);
-	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 0);
+	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
 
-	GLint colAttrib = glGetAttribLocation(program, "color");
+	/*GLint colAttrib = glGetAttribLocation(program, "color");
 	glEnableVertexAttribArray(colAttrib);
 	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 
-		8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+		8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));*/
 
 	GLint texAttrib = glGetAttribLocation(program, "texcoord");
 	glEnableVertexAttribArray(texAttrib);
 	glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 
-		8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
+		5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 	
 	GLuint textures[2];
 	glGenTextures(2, textures);
@@ -186,7 +218,7 @@ int main()
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textures[0]);
-	image = SOIL_load_image("kitten.png", &width, &height, 0, SOIL_LOAD_RGB);
+	image = SOIL_load_image(img, &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
 		GL_UNSIGNED_BYTE, image);
 	SOIL_free_image_data(image);
@@ -199,7 +231,7 @@ int main()
 	
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, textures[1]);
-	image = SOIL_load_image("kitten.png", &width, &height, 0, SOIL_LOAD_RGB);
+	image = SOIL_load_image(img, &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
 		GL_UNSIGNED_BYTE, image);
 	SOIL_free_image_data(image);
@@ -226,6 +258,7 @@ int main()
 	GLint uniColor = glGetUniformLocation(program, "overrideColor");
 	glUniform3f(uniColor, 1.0f, 1.0f, 1.0f);
 
+	int count = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
@@ -235,20 +268,30 @@ int main()
 		float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 		
 		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0, 0, .5f));
+#ifdef ROTATE
 		model = glm::rotate(model, time * glm::radians(66.66f), 
 			glm::vec3(0.0f, 0.0f, 1.0f));
+#endif
 		GLint uniModel = glGetUniformLocation(program, "model");
 		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform1f(glGetUniformLocation(program, "time"), time);
 
-		glm::mat4 proj = glm::perspective(glm::radians(sin(time) * 40.0f + 60.0f),
+		glm::mat4 proj = glm::perspective(45.f,
 			800.0f / 600.0f, 0.01f, 10.0f);
 		//proj = glm::rotate(proj, glm::radians(360.0f) * 0.333f,
 		//	glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 
 		//glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(offset * sizeof(GLuint)));
+#ifdef SINGLETRI
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 
+			(void*)(tri * 3 * sizeof(GLuint)));
+#else
+		glDrawElements(GL_TRIANGLES, 12*3, GL_UNSIGNED_INT, 0);
+#endif
+
+		
 
 		glEnable(GL_STENCIL_TEST);
 			glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -257,14 +300,16 @@ int main()
 			glDepthMask(GL_FALSE);
 			glClear(GL_STENCIL_BUFFER_BIT);
 
-			glDrawArrays(GL_TRIANGLES, 8, 6);
+			glUniform3f(uniColor, 0.f, 0.f, 0.f);
+			glDrawArrays(GL_TRIANGLES, 14, 6);
+			glUniform3f(uniColor, 1.f, 1.f, 1.f);
 
 			glStencilFunc(GL_EQUAL, 1, 0xFF);
 			glStencilMask(0x00);
 			glDepthMask(GL_TRUE);
 
 			model = glm::scale(
-				glm::translate(model, glm::vec3(0, 0, -1)),
+				glm::translate(model, glm::vec3(0, 0, -1.5f)),
 				glm::vec3(1, 1, -1)
 			);
 			glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -274,6 +319,22 @@ int main()
 		glDisable(GL_STENCIL_TEST);
 
 		glfwSwapBuffers(window);
+#ifdef INCREMENT
+		count++;
+		if (count >= 100)
+		{
+			count = 0;
+			side++;
+			side %= 6;
+		}
+		if (count >= 50)
+		{
+			count = 0;
+			tri++;
+			tri %= 12;
+			std::cout << "Tri " << tri << std::endl;
+		}
+#endif
 	}
 
 	glDeleteProgram(program);
