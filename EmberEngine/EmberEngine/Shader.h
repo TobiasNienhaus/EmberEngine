@@ -36,5 +36,6 @@ public:
 	void SetFloat(const char* name, float v1, float v2) const;
 	void SetFloat(const char* name, float v1, float v2, float v3) const;
 	void SetFloat(const char* name, float v1, float v2, float v3, float v4) const;
+	void SetMat4(const char* name, glm::mat4 value) const;
 };
 
