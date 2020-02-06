@@ -30,6 +30,11 @@ public:
 	void Cleanup();
 	void Use();
 
-	GLuint GetProgramLoc() { return shaderProgram; }
+	void SetBool(const char* name, bool value) const;
+	void SetInt(const char* name, int value) const;
+	void SetFloat(const char* name, float value) const;
+	void SetFloat(const char* name, float v1, float v2) const;
+	void SetFloat(const char* name, float v1, float v2, float v3) const;
+	void SetFloat(const char* name, float v1, float v2, float v3, float v4) const;
 };
 

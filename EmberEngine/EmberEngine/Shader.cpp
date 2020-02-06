@@ -7,7 +7,6 @@ Shader::Shader(const char* frag, const char* vert) :
 	setVertexShader(vert);
 	setFragmentShader(frag);
 	createProgram();
-	std::cout << "Shader creation successful: " << valid() << std::endl;
 }
 
 void Shader::Cleanup()
@@ -30,11 +29,11 @@ void Shader::createProgram()
 	glBindFragDataLocation(shaderProgram, 0, "outColor");
 	glLinkProgram(shaderProgram);
 	glUseProgram(shaderProgram);
+	validProgram = true;
 }
 
 void Shader::setFragmentShader(const char* path)
 {
-	std::cout << "Fragment shader" << std::endl;
 	validFragment = false;
 	std::string source = getShaderContent(path);
 	if (source.empty() || source == "")
@@ -57,7 +56,6 @@ void Shader::setFragmentShader(const char* path)
 
 void Shader::setVertexShader(const char* path)
 {
-	std::cout << "Vertex shader" << std::endl;
 	validVertex = false;
 	std::string source = getShaderContent(path);
 	if (source.empty() || source == "")
@@ -79,12 +77,12 @@ void Shader::setVertexShader(const char* path)
 
 std::string Shader::getShaderContent(const char* path)
 {
-	std::string ext = boost::filesystem::extension(path);
+	/*std::string ext = boost::filesystem::extension(path);
 	if (ext != ".glsl")
 	{
 		std::cout << "Invalid filetype for fragment shader " << path << std::endl;
 		return "";
-	}
+	}*/
 	std::ifstream file;
 	file.open(path);
 
@@ -102,9 +100,6 @@ std::string Shader::getShaderContent(const char* path)
 		ret += temp + "\n";
 	}
 	file.close();
-
-	std::cout << ret << std::endl;
-
 	return ret;
 }
 
@@ -127,4 +122,34 @@ void Shader::Use()
 	if (!valid())
 		return;
 	glUseProgram(shaderProgram);
+}
+
+void Shader::SetBool(const char* name, bool value) const
+{
+	glUniform1i(glGetUniformLocation(shaderProgram, name), (int)value);
+}
+
+void Shader::SetInt(const char* name, int value) const
+{
+	glUniform1i(glGetUniformLocation(shaderProgram, name), value);
+}
+
+void Shader::SetFloat(const char* name, float value) const
+{
+	glUniform1f(glGetUniformLocation(shaderProgram, name), value);
+}
+
+void Shader::SetFloat(const char* name, float v1, float v2) const
+{
+	glUniform2f(glGetUniformLocation(shaderProgram, name), v1, v2);
+}
+
+void Shader::SetFloat(const char* name, float v1, float v2, float v3) const
+{
+	glUniform3f(glGetUniformLocation(shaderProgram, name), v1, v2, v3);
+}
+
+void Shader::SetFloat(const char* name, float v1, float v2, float v3, float v4) const
+{
+	glUniform4f(glGetUniformLocation(shaderProgram, name), v1, v2, v3, v4);
 }
