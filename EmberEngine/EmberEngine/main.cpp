@@ -1,50 +1,7 @@
-#define GLEW_STATIC
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "OpenGLLibraries.h"
 #include <iostream>
 #include <chrono>
-#include <SOIL.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-const GLchar* vertexSource = R"glsl(
-    #version 150 core
-    in vec3 position;
-    in vec3 color;
-    in vec2 texcoord;
-    out vec3 Color;
-    out vec2 Texcoord;
-	uniform float time;
-	uniform vec3 overrideColor;
-	uniform mat4 model;
-	uniform mat4 view;
-	uniform mat4 proj;
-    void main()
-    {
-        Color = vec3(1.0f) * overrideColor;
-        Texcoord = texcoord;
-        gl_Position = proj * view * model * vec4(position, 1.0);
-    }
-)glsl";
-const GLchar* fragmentSource = R"glsl(
-    #version 150 core
-    in vec3 Color;
-    in vec2 Texcoord;
-    out vec4 outColor;
-    uniform sampler2D tex;
-	uniform sampler2D tex2;
-	uniform float time;
-    void main()
-    {
-		float texX = Texcoord.x;
-		float texY = Texcoord.y;
-		vec4 col1 = texture(tex, vec2(texX, texY));
-		vec4 col2 = texture(tex2, vec2(texX, texY));
-        outColor = mix(col1, col2, 1) * vec4(Color, 1.0f);
-		//outColor = vec4(texX, texY, 0.0f, 1.0f);
-    }
-)glsl";
+#include "Shader.h"
 
 #define ROTATE
 //const char* img = "kitten.png";
@@ -112,13 +69,11 @@ GLuint cubeEBO[]
 	0, 3, 2,
 	//1
 	1, 5, 7,
-	//problem
 	1, 7, 3,
 	//2
 	5, 4, 6,
 	5, 6, 7,
 	//3
-	//problem
 	4, 5, 9,
 	9, 4, 8,
 	//4
@@ -156,44 +111,14 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
 	
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexSource, NULL);
-	glCompileShader(vertexShader);
-
 	GLuint ebo;
 	glGenBuffers(1, &ebo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeEBO), cubeEBO, GL_STATIC_DRAW);
 
-	GLint statusVert;
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &statusVert);
-	if (statusVert != GL_TRUE)
-	{
-		char buffer[512];
-		glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
-		std::cout << buffer << std::endl;
-		return -999;
-	}
-	GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragShader, 1, &fragmentSource, NULL);
-	glCompileShader(fragShader);
-
-	GLint statusFrag;
-	glGetShaderiv(fragShader, GL_COMPILE_STATUS, &statusFrag);
-	if (statusFrag != GL_TRUE)
-	{
-		char buffer[512];
-		glGetShaderInfoLog(fragShader, 512, NULL, buffer);
-		std::cout << buffer << std::endl;
-		return -1000;
-	}
-
-	GLuint program = glCreateProgram();
-	glAttachShader(program, vertexShader);
-	glAttachShader(program, fragShader);
-	glBindFragDataLocation(program, 0, "outColor");
-	glLinkProgram(program);
-	glUseProgram(program);
+	Shader s = Shader("res/shader/frag.glsl", "res/shader/vert.glsl");
+	GLuint program = s.GetProgramLoc();
+	s.Use();
 
 	// Specify the layout of the vertex data
 	GLint posAttrib = glGetAttribLocation(program, "position");
@@ -319,27 +244,9 @@ int main()
 		glDisable(GL_STENCIL_TEST);
 
 		glfwSwapBuffers(window);
-#ifdef INCREMENT
-		count++;
-		if (count >= 100)
-		{
-			count = 0;
-			side++;
-			side %= 6;
-		}
-		if (count >= 50)
-		{
-			count = 0;
-			tri++;
-			tri %= 12;
-			std::cout << "Tri " << tri << std::endl;
-		}
-#endif
 	}
 
-	glDeleteProgram(program);
-	glDeleteShader(fragShader);
-	glDeleteShader(vertexShader);
+	s.Cleanup();
 
 	glDeleteBuffers(1, &vbo);
 
