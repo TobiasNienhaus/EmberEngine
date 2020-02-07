@@ -3,11 +3,16 @@
 #include <chrono>
 #include "Shader.h"
 #include "stb/stb_image.h"
+#include <algorithm>
+#include "Camera.h"
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 GLuint loadTexture(const char* location, bool isRGBA = false);
+
+void processInput(GLFWwindow* window);
 
 float quad[] = {
 	// first triangle
@@ -79,6 +84,20 @@ glm::vec3 cubePositions[] = {
   glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
+glm::vec3 camPos(0.0f, 0.0f, 3.0f);
+glm::vec3 camFront(0.0f, 0.0f, -1.0f);
+glm::vec3 camUp(0.0f, 1.0f, 0.0f);
+
+float deltaTime = 0.0f;
+float oldTime = 0.0f;
+
+#define SCR_WIDTH 800.0f
+#define SCR_HEIGHT 600.0f
+
+Camera c(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = SCR_WIDTH / 2.0f, lastY = SCR_HEIGHT / 2.0f;
+bool firstMouse = true;
+
 int main()
 {
 	glfwInit();
@@ -90,7 +109,7 @@ int main()
 	//glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	GLFWmonitor* primary = glfwGetPrimaryMonitor();
-	GLFWwindow* window = glfwCreateWindow(800, 600, "Ember", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Ember", nullptr, nullptr);
 
 	if (window == NULL)
 	{
@@ -104,6 +123,9 @@ int main()
 	glewInit();
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_callback);
+
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -135,12 +157,15 @@ int main()
 	s.SetInt("tex2", 1);
 
 	glm::mat4 projection = glm::mat4(1.0f);
-	projection = glm::perspective(glm::radians(60.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+	projection = glm::perspective(glm::radians(60.0f), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 	s.SetMat4("projection", projection);
 
 	while (!glfwWindowShouldClose(window))
 	{
+		processInput(window);
 		float time = (float)glfwGetTime();
+		deltaTime = time - oldTime;
+		oldTime = time;
 
 		glClearColor(0.2f, 0.3f, 0.4f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -149,8 +174,7 @@ int main()
 		s.SetFloat("time", time);
 
 		glm::mat4 view = glm::mat4(1.0f);
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -6.0f));
-		view = glm::rotate(view, glm::radians(time * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		view = c.View();
 
 		s.SetMat4("view", view);
 
@@ -175,11 +199,41 @@ int main()
 	glfwTerminate();
 }
 
+void processInput(GLFWwindow* window)
+{
+	const float cameraSpeed = 2.5f * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		c.ProcessDirection(Cam_Movement::FORWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		c.ProcessDirection(Cam_Movement::BACKWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		c.ProcessDirection(Cam_Movement::LEFT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		c.ProcessDirection(Cam_Movement::RIGHT, deltaTime);
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+	float xOff = xpos - lastX;
+	float yOff = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	c.ProcessMouse(xOff, yOff);
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	if (action == GLFW_PRESS)
 	{
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
+		if (key == GLFW_KEY_ESCAPE)
+			glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
 }
 
