@@ -32,6 +32,7 @@ public:
 		float speed = 2.5f, float yaw = -90.0f, float pitch = 0.0f);
 
 	glm::mat4 View();
+	glm::vec3 Position() { return glm::vec3(pos); }
 
 	void ProcessDirection(Cam_Movement dir, float deltaTime);
 	void ProcessMouse(float xOff, float yOff, bool constrainPitch = true);

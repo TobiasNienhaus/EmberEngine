@@ -13,18 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\IncludeHeaders">
-      <UniqueIdentifier>{c9b469e4-27e0-4c46-b127-d9062151f03b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="stb">
       <UniqueIdentifier>{3994fccd-ab11-4b8a-ba76-0b8731c92805}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\IncludeHeaders">
+      <UniqueIdentifier>{c9b469e4-27e0-4c46-b127-d9062151f03b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
@@ -38,11 +35,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OpenGLLibraries.h">
-      <Filter>Source Files\IncludeHeaders</Filter>
+      <Filter>Header Files\IncludeHeaders</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
       <Filter>Header Files</Filter>

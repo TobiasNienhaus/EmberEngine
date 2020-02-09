@@ -38,7 +38,6 @@ void Camera::ProcessMouse(float xOff, float yOff, bool constrainPitch)
 {
 	xOff *= sensitivity;
 	yOff *= sensitivity;
-	std::cout << xOff << " " << yOff << std::endl;
 
 	yaw += xOff;
 	pitch += yOff;
